@@ -1,8 +1,10 @@
+import math
+
 import pretty_midi
 
-from mie.basic_pitch_analyzer import BasicPitchAnalyzer
+from mie.basic_pitch_analyzer import BasicPitchAnalyzer, TIME_ACCURACY_ONSET_TOLERANCE
 
-from .conftest import make_midi
+from .conftest import make_midi, score
 
 # A simple ascending melody: (MIDI pitch, start_sec, end_sec). Reused as the
 # "reference" in most tests; we perturb copies of it to simulate mistakes.
@@ -22,13 +24,19 @@ def test_perfect_match_scores_one(analyzer: BasicPitchAnalyzer):
     ref = make_midi(MELODY)
     est = make_midi(MELODY)
 
-    acc = analyzer._get_pitch_accuracy(est, ref)
+    note_acc, time_acc = score(analyzer, est, ref)
 
-    assert acc.f1 == 1.0
-    assert acc.precision == 1.0
-    assert acc.recall == 1.0
-    assert acc.missed_notes == []
-    assert acc.extra_notes == []
+    assert note_acc.f1 == 1.0
+    assert note_acc.precision == 1.0
+    assert note_acc.recall == 1.0
+    assert note_acc.missed_notes == []
+    assert note_acc.extra_notes == []
+    assert time_acc.mean_onset_error_sec == 0.0
+    assert time_acc.mean_abs_onset_error_sec == 0.0
+    assert time_acc.matched_note_count == len(MELODY)
+
+    for time_deviation in time_acc.worst_deviations:
+        assert time_deviation.onset_error_sec == 0.0
 
 
 def test_dropped_note_is_missed(analyzer: BasicPitchAnalyzer):
@@ -36,13 +44,19 @@ def test_dropped_note_is_missed(analyzer: BasicPitchAnalyzer):
     ref = make_midi(MELODY)
     est = make_midi([n for n in MELODY if n[0] != 67])  # drop G4
 
-    acc = analyzer._get_pitch_accuracy(est, ref)
+    note_acc, time_acc = score(analyzer, est, ref)
 
-    assert acc.precision == 1.0  # everything played was correct
-    assert acc.recall == 3 / 4  # but one of four ref notes is missing
-    assert len(acc.missed_notes) == 1
-    assert acc.missed_notes[0].pitch == "G4"
-    assert acc.extra_notes == []
+    assert note_acc.precision == 1.0  # everything played was correct
+    assert note_acc.recall == (len(MELODY) - 1) / len(MELODY)  # but one of ref notes is missing
+    assert len(note_acc.missed_notes) == 1
+    assert note_acc.missed_notes[0].pitch == "G4"
+    assert note_acc.extra_notes == []
+    assert time_acc.mean_onset_error_sec == 0.0
+    assert time_acc.mean_abs_onset_error_sec == 0.0
+    assert time_acc.matched_note_count == len(MELODY) - 1
+
+    for time_deviation in time_acc.worst_deviations:
+        assert time_deviation.onset_error_sec == 0.0
 
 
 def test_added_note_is_extra(analyzer: BasicPitchAnalyzer):
@@ -50,13 +64,19 @@ def test_added_note_is_extra(analyzer: BasicPitchAnalyzer):
     ref = make_midi(MELODY)
     est = make_midi(MELODY + [(69, 2.0, 2.4)])  # extra A4
 
-    acc = analyzer._get_pitch_accuracy(est, ref)
+    note_acc, time_acc = score(analyzer, est, ref)
 
-    assert acc.recall == 1.0  # all ref notes were played
-    assert acc.precision == 4 / 5  # but one played note was spurious
-    assert len(acc.extra_notes) == 1
-    assert acc.extra_notes[0].pitch == "A4"
-    assert acc.missed_notes == []
+    assert note_acc.recall == 1.0  # all ref notes were played
+    assert note_acc.precision == len(MELODY) / (len(MELODY) + 1)  # but one played note was spurious
+    assert len(note_acc.extra_notes) == 1
+    assert note_acc.extra_notes[0].pitch == "A4"
+    assert note_acc.missed_notes == []
+    assert time_acc.mean_onset_error_sec == 0.0
+    assert time_acc.mean_abs_onset_error_sec == 0.0
+    assert time_acc.matched_note_count == len(MELODY)
+
+    for time_deviation in time_acc.worst_deviations:
+        assert time_deviation.onset_error_sec == 0.0
 
 
 def test_wrong_note_is_both_missed_and_extra(analyzer: BasicPitchAnalyzer):
@@ -65,22 +85,25 @@ def test_wrong_note_is_both_missed_and_extra(analyzer: BasicPitchAnalyzer):
     ref = make_midi(MELODY)
     est = make_midi(wrong)
 
-    acc = analyzer._get_pitch_accuracy(est, ref)
+    note_acc, _ = score(analyzer, est, ref)
 
-    assert {n.pitch for n in acc.missed_notes} == {"E4"}
-    assert {n.pitch for n in acc.extra_notes} == {"F4"}
+    assert {n.pitch for n in note_acc.missed_notes} == {"E4"}
+    assert {n.pitch for n in note_acc.extra_notes} == {"F4"}
 
 
-def test_constant_time_offset_is_corrected(analyzer: BasicPitchAnalyzer):
+def test_global_onset_error_is_corrected(analyzer: BasicPitchAnalyzer):
     """A performance shifted by a constant (e.g. leading silence) should still score perfectly."""
     ref = make_midi(MELODY)
-    est = make_midi(
-        [(p, s + 5.0, e + 5.0) for p, s, e in MELODY]
-    )  # whole thing 5s late
+    est = make_midi([(p, s + 5.0, e + 5.0) for p, s, e in MELODY])  # whole thing 5s late
 
-    acc = analyzer._get_pitch_accuracy(est, ref)
+    est_intervals, est_pitches = analyzer._extract_notes_from_midi(est)
+    ref_intervals, ref_pitches = analyzer._extract_notes_from_midi(ref)
 
-    assert acc.f1 == 1.0  # offset alignment removes the constant shift
+    analyzer._fix_global_onset_error(est_intervals, ref_intervals)
+
+    note_acc = analyzer._get_note_accuracy(est_intervals, est_pitches, ref_intervals, ref_pitches)
+
+    assert note_acc.f1 == 1.0  # offset alignment removes the constant shift
 
 
 def test_empty_estimate_returns_zeros(analyzer: BasicPitchAnalyzer):
@@ -88,14 +111,63 @@ def test_empty_estimate_returns_zeros(analyzer: BasicPitchAnalyzer):
     ref = make_midi(MELODY)
     est = make_midi([])
 
-    acc = analyzer._get_pitch_accuracy(est, ref)
+    note_acc, time_acc = score(analyzer, est, ref)
 
-    assert acc.f1 == 0.0
-    assert acc.precision == 0.0
-    assert acc.recall == 0.0
+    assert note_acc.f1 == 0.0
+    assert note_acc.precision == 0.0
+    assert note_acc.recall == 0.0
+    assert time_acc is None
+
+
+def test_timing_rushing(analyzer: BasicPitchAnalyzer):
+    """Timing tempo is rushing"""
+    ref = make_midi(MELODY)
+    shift = TIME_ACCURACY_ONSET_TOLERANCE / len(MELODY)
+    est = make_midi([(p, s + shift * (i + 1), e + shift * (i + 1)) for i, (p, s, e) in enumerate(MELODY)])
+
+    _, time_acc = score(analyzer, est, ref)
+
+    deviations = [shift * (i + 1) for i in range(len(MELODY))]
+    deviations.sort(key=lambda d: abs(d), reverse=True)
+
+    assert math.isclose(time_acc.mean_onset_error_sec, sum(deviations) / len(deviations), rel_tol=1e-4)
+    assert time_acc.matched_note_count == len(MELODY)
+
+    for i, dev in enumerate(time_acc.worst_deviations):
+        assert math.isclose(dev.onset_error_sec, deviations[i], rel_tol=1e-4)
+
+
+def test_timing_chaos(analyzer: BasicPitchAnalyzer):
+    """Timing tempo is chaotic"""
+    ref = make_midi(MELODY)
+    shift = TIME_ACCURACY_ONSET_TOLERANCE / len(MELODY)
+    est = make_midi([(p, s + shift * (i + 1) * ((-1) ** i), e + shift * (i + 1) * ((-1) ** i)) for i, (p, s, e) in enumerate(MELODY)])
+
+    _, time_acc = score(analyzer, est, ref)
+
+    deviations = [shift * (i + 1) * ((-1) ** i) for i in range(len(MELODY))]
+    deviations.sort(key=lambda d: abs(d), reverse=True)
+
+    assert math.isclose(time_acc.mean_abs_onset_error_sec, sum([abs(d) for d in deviations]) / len(deviations), rel_tol=1e-4)
+    assert time_acc.matched_note_count == len(MELODY)
+
+    for i, dev in enumerate(time_acc.worst_deviations):
+        assert math.isclose(dev.onset_error_sec, deviations[i], rel_tol=1e-4)
 
 
 # --- Helper methods ------------------------------------------------------------
+
+
+def test_extract_notes_from_midi(analyzer: BasicPitchAnalyzer):
+    """Extracted notes correspond to the data in MIDI"""
+    pm = make_midi(MELODY)
+    intervals, pitches = analyzer._extract_notes_from_midi(pm)
+
+    ref_pitches = [note[0] for note in MELODY]
+    ref_intervals = [[note[1], note[2]] for note in MELODY]
+
+    assert (pitches == ref_pitches).all()
+    assert (intervals == ref_intervals).all()
 
 
 def test_extract_notes_skips_drums(analyzer: BasicPitchAnalyzer):
@@ -113,9 +185,7 @@ def test_extract_notes_skips_drums(analyzer: BasicPitchAnalyzer):
 def test_instrument_names_are_deduped(analyzer: BasicPitchAnalyzer):
     """Multiple tracks of the same program collapse to one name (fugue-voice case)."""
     pm = make_midi(MELODY, program=0)
-    pm.instruments.append(
-        make_midi(MELODY, program=0).instruments[0]
-    )  # second piano track
+    pm.instruments.append(make_midi(MELODY, program=0).instruments[0])  # second piano track
 
     names = analyzer._get_instrument_names(pm)
 
@@ -136,4 +206,4 @@ def test_analyze_on_real_sample(analyzer: BasicPitchAnalyzer):
     assert result.duration_sec > 0
     assert result.instruments == ["Acoustic Grand Piano"]
     assert "BWV 850" in result.piece
-    assert 0.6 < result.pitch_accuracy.f1 < 0.95
+    assert 0.6 < result.note_accuracy.f1 < 0.95

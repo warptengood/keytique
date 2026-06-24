@@ -1,21 +1,18 @@
 import os
 
+import pretty_midi
 import numpy as np
 from mido import MidiFile, MidiTrack
 from basic_pitch import ICASSP_2022_MODEL_PATH
 from basic_pitch.inference import predict, Model
 from mir_eval.transcription import match_notes
-from pretty_midi import (
-    Note,
-    Instrument,
-    PrettyMIDI,
-    note_number_to_hz,
-    note_number_to_name,
-    program_to_instrument_name,
-)
 
 from ._analyzer import Analyzer
-from .schemas import AnalysisResult, PitchAccuracy, NoteOnset
+from .schemas import AnalysisResult, NoteAccuracy, Note, TimingAccuracy, TimingDeviation
+
+
+TIME_ACCURACY_ONSET_TOLERANCE = 0.15
+TOP_WORST_DEVIATIONS = 5
 
 
 class BasicPitchAnalyzer(Analyzer):
@@ -24,34 +21,41 @@ class BasicPitchAnalyzer(Analyzer):
 
     def analyze(self, audio_path: str, midi_path: str) -> AnalysisResult:
         _, est_midi, _ = predict(audio_path, self.model)
-        ref_midi = PrettyMIDI(midi_path)
+        ref_midi = pretty_midi.PrettyMIDI(midi_path)
+
+        est_intervals, est_pitches = self._extract_notes_from_midi(est_midi)
+        ref_intervals, ref_pitches = self._extract_notes_from_midi(ref_midi)
+
+        self._fix_global_onset_error(est_intervals, ref_intervals)
 
         return AnalysisResult(
             piece=self._get_piece_name(midi_path),
             instruments=self._get_instrument_names(ref_midi),
             duration_sec=ref_midi.get_end_time(),
-            pitch_accuracy=self._get_pitch_accuracy(est_midi, ref_midi),
+            note_accuracy=self._get_note_accuracy(est_intervals, est_pitches, ref_intervals, ref_pitches),
+            timing_accuracy=self._get_timing_accuracy(est_intervals, est_pitches, ref_intervals, ref_pitches),
         )
 
-    def _get_pitch_accuracy(
-        self, est_midi: PrettyMIDI, ref_midi: PrettyMIDI
-    ) -> PitchAccuracy:
-        est_intervals, est_pitches = self._extract_notes_from_midi(est_midi)
-        ref_intervals, ref_pitches = self._extract_notes_from_midi(ref_midi)
+    def _fix_global_onset_error(self, est_intervals: np.ndarray, ref_intervals: np.ndarray) -> None:
+        # Remove the leading silence
+        global_error = est_intervals[:, 0].min() - ref_intervals[:, 0].min()
+        est_intervals -= global_error
 
+    def _get_note_accuracy(
+        self,
+        est_intervals: np.ndarray,
+        est_pitches: np.ndarray,
+        ref_intervals: np.ndarray,
+        ref_pitches: np.ndarray,
+    ) -> NoteAccuracy:
         if len(ref_pitches) == 0 or len(est_pitches) == 0:
-            return PitchAccuracy(
-                f1=0, precision=0, recall=0, missed_notes=[], extra_notes=[]
-            )
-
-        global_offset = est_intervals[:, 0].min() - ref_intervals[:, 0].min()
-        est_intervals -= global_offset
+            return NoteAccuracy()
 
         matching = match_notes(
             ref_intervals,
-            note_number_to_hz(ref_pitches),
+            pretty_midi.note_number_to_hz(ref_pitches),
             est_intervals,
-            note_number_to_hz(est_pitches),
+            pretty_midi.note_number_to_hz(est_pitches),
             offset_ratio=None,
         )
 
@@ -64,23 +68,23 @@ class BasicPitchAnalyzer(Analyzer):
         matched_est = {j for _, j in matching}
 
         missed_notes = [
-            NoteOnset(
-                pitch=note_number_to_name(ref_pitches[i]),
-                time_sec=float(ref_intervals[i][0]),
+            Note(
+                pitch=pretty_midi.note_number_to_name(ref_pitches[i]),
+                onset_sec=float(ref_intervals[i][0]),
             )
             for i in range(len(ref_pitches))
             if i not in matched_ref
         ]
         extra_notes = [
-            NoteOnset(
-                pitch=note_number_to_name(est_pitches[i]),
-                time_sec=float(est_intervals[i][0]),
+            Note(
+                pitch=pretty_midi.note_number_to_name(est_pitches[i]),
+                onset_sec=float(est_intervals[i][0]),
             )
             for i in range(len(est_pitches))
             if i not in matched_est
         ]
 
-        return PitchAccuracy(
+        return NoteAccuracy(
             f1=f1,
             precision=precision,
             recall=recall,
@@ -88,18 +92,60 @@ class BasicPitchAnalyzer(Analyzer):
             extra_notes=extra_notes,
         )
 
-    def _extract_notes_from_midi(
-        self, midi_data: PrettyMIDI
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def _get_timing_accuracy(
+        self,
+        est_intervals: np.ndarray,
+        est_pitches: np.ndarray,
+        ref_intervals: np.ndarray,
+        ref_pitches: np.ndarray,
+    ) -> TimingAccuracy | None:
+        if len(ref_pitches) == 0 or len(est_pitches) == 0:
+            return None
+
+        matching = match_notes(
+            ref_intervals,
+            pretty_midi.note_number_to_hz(ref_pitches),
+            est_intervals,
+            pretty_midi.note_number_to_hz(est_pitches),
+            onset_tolerance=TIME_ACCURACY_ONSET_TOLERANCE,
+            offset_ratio=None,
+        )
+
+        if not matching:
+            return None
+
+        pairs = np.array(matching)  # shape (N, 2): columns are (ref_i, est_j)
+        onset_error_sec = est_intervals[pairs[:, 1], 0] - ref_intervals[pairs[:, 0], 0]
+        abs_error = np.abs(onset_error_sec)
+
+        worst = np.argsort(-abs_error, kind="stable")[:TOP_WORST_DEVIATIONS]
+
+        return TimingAccuracy(
+            mean_onset_error_sec=float(onset_error_sec.mean()),
+            mean_abs_onset_error_sec=float(abs_error.mean()),
+            matched_note_count=len(matching),
+            worst_deviations=[
+                TimingDeviation(
+                    reference_note=Note(
+                        pitch=pretty_midi.note_number_to_name(ref_pitches[pairs[k, 0]]),
+                        onset_sec=float(ref_intervals[pairs[k, 0]][0]),
+                    ),
+                    onset_error_sec=float(onset_error_sec[k]),
+                )
+                for k in worst
+            ],
+        )
+
+    def _extract_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> tuple[np.ndarray, np.ndarray]:
         intervals, pitches = [], []
 
         for instrument in midi_data.instruments:
-            instrument: Instrument
+            instrument: pretty_midi.Instrument
             if instrument.is_drum:
                 continue
 
             for note in instrument.notes:
-                note: Note
+                note: pretty_midi.Note
                 intervals.append([note.start, note.end])
                 pitches.append(note.pitch)
 
@@ -113,14 +159,10 @@ class BasicPitchAnalyzer(Analyzer):
                 return track.name
         return os.path.splitext(os.path.basename(midi_path))[0]
 
-    def _get_instrument_names(self, midi_data: PrettyMIDI) -> list[str]:
+    def _get_instrument_names(self, midi_data: pretty_midi.PrettyMIDI) -> list[str]:
         names = []
         for instrument in midi_data.instruments:
-            instrument: Instrument
-            name = (
-                "Drum"
-                if instrument.is_drum
-                else program_to_instrument_name(instrument.program)
-            )
+            instrument: pretty_midi.Instrument
+            name = "Drum" if instrument.is_drum else pretty_midi.program_to_instrument_name(instrument.program)
             names.append(name)
         return list(dict.fromkeys(names))
