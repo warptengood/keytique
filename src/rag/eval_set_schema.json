@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Evaluation Set Schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "queries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "skill_area": {
+            "type": "string"
+          },
+          "relevant": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "doc_id": {
+                  "type": "string"
+                },
+                "section_title": {
+                  "type": "string"
+                },
+                "grade": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "doc_id",
+                "section_title",
+                "grade"
+              ]
+            }
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "query",
+          "category",
+          "skill_area",
+          "relevant",
+          "notes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "queries"
+  ]
+}

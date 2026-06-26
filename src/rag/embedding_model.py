@@ -89,3 +89,10 @@ class E5(BasicEmbeddingModel):
     def encode_documents(self, documents: list[str], batch_size: int = 64) -> list[list[float]]:
         documents = ["passage: " + doc for doc in documents]
         return super().encode_documents(documents, batch_size)
+
+
+EMBEDDING_MODELS = {
+    "all-MiniLM-L6-v2": MiniLM,
+    "bge-small-en-v1.5": BGE,
+    "e5-small-v2": E5,
+}

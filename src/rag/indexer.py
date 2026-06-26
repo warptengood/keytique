@@ -14,11 +14,16 @@ class Indexer:
         self._client = client
         self._embedder = embedder
 
-    def ensure_collection(self) -> None:
+    def delete_collection(self) -> None:
+        if not self.collection_exists():
+            return
+        self._client.delete_collection(COLLECTION_NAME)
+
+    def collection_exists(self) -> bool:
         return self._client.collection_exists(COLLECTION_NAME)
 
     def build_index(self) -> None:
-        if self.ensure_collection():
+        if self.collection_exists():
             return
 
         self._client.create_collection(
