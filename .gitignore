@@ -2,4 +2,10 @@
 .pytest_cache
 .ruff_cache
 .venv
+.env
 *.ipynb
+
+src/rag/corpus/
+src/rag/refs/
+
+qdrant_storage/

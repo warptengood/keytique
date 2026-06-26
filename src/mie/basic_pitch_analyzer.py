@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pretty_midi
 import numpy as np
@@ -157,7 +157,7 @@ class BasicPitchAnalyzer(Analyzer):
             track: MidiTrack
             if track.name != "":
                 return track.name
-        return os.path.splitext(os.path.basename(midi_path))[0]
+        return Path(midi_path).stem
 
     def _get_instrument_names(self, midi_data: pretty_midi.PrettyMIDI) -> list[str]:
         names = []
