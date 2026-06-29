@@ -5,7 +5,4 @@
 .env
 *.ipynb
 
-src/rag/corpus/
-src/rag/refs/
-
 qdrant_storage/

@@ -1,0 +1,249 @@
+{
+  "version": "1.0",
+  "queries": [
+    {
+      "id": "q01",
+      "query": "I keep hitting wrong notes in passages I've already learned. How do I fix this?",
+      "category": "pitch",
+      "skill_area": "pitch",
+      "relevant": [
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Repeated practice and blind practice", "grade": 2},
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Practice slowly but correctly", "grade": 2},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "We ARE what we PRACTICE", "grade": 2},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "The Power of Repetition", "grade": 2},
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Concentration is key", "grade": 1},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "Mechanical Approach", "grade": 1}
+      ],
+      "notes": "Core wrong-note remediation: slow correct repetition, blind practice, and not ingraining errors directly answer this."
+    },
+    {
+      "id": "q02",
+      "query": "How can I practice big leaps across the keyboard without missing the notes I'm jumping to?",
+      "category": "pitch",
+      "skill_area": "pitch",
+      "relevant": [
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Repeated practice and blind practice", "grade": 2},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "Mechanical Approach", "grade": 1}
+      ],
+      "notes": "Blind-practice chunk explicitly describes leaping then freezing to check hand position; Mechanical Approach covers approaching a note from the prior note."
+    },
+    {
+      "id": "q03",
+      "query": "How do I help a student learn the sharps and flats in a piece's key signature?",
+      "category": "pitch",
+      "skill_area": "pitch",
+      "relevant": [
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "Create a Keyboard Map", "grade": 2},
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "“Chunk Out” The Key’s Scale and Measures", "grade": 2},
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "Discover the “Why” With a Circle of 5ths Chart", "grade": 2}
+      ],
+      "notes": "All three key-signature teaching techniques directly target learning a piece's sharps/flats."
+    },
+    {
+      "id": "q04",
+      "query": "What's a good way to stop misreading accidentals while sight-reading?",
+      "category": "pitch",
+      "skill_area": "pitch",
+      "relevant": [
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "Create a Keyboard Map", "grade": 2},
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "“Chunk Out” The Key’s Scale and Measures", "grade": 1},
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "Discover the “Why” With a Circle of 5ths Chart", "grade": 1}
+      ],
+      "notes": "Keyboard Map maps every accidental before playing; the other two reinforce where/why accidentals occur."
+    },
+    {
+      "id": "q05",
+      "query": "I get nervous and play a wrong note right at the spot I knew was coming. Any mental tricks?",
+      "category": "pitch",
+      "skill_area": "pitch",
+      "relevant": [
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "Psychology of musical performance", "grade": 2},
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Concentration is key", "grade": 1},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "The art of graceful recovery", "grade": 1}
+      ],
+      "notes": "Psychology chunk is exactly about anticipating and then playing the dreaded wrong note; the others cover focus and recovering from mistakes."
+    },
+    {
+      "id": "q06",
+      "query": "How do I count sixteenth notes out loud when I'm reading rhythm?",
+      "category": "timing",
+      "skill_area": "timing",
+      "relevant": [
+        {"doc_id": "reading-rhythms-songtive", "section_title": "Start with a Simple Counting System", "grade": 2},
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Verbalize the subdivisions", "grade": 2},
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Use a metronome selectively", "grade": 1}
+      ],
+      "notes": "Both counting chunks give explicit '1 e & a' sixteenth-note syllable systems."
+    },
+    {
+      "id": "q07",
+      "query": "My triplets always sound uneven. How should I count and feel them?",
+      "category": "timing",
+      "skill_area": "timing",
+      "relevant": [
+        {"doc_id": "reading-rhythms-songtive", "section_title": "Incorporate Triplet Counting", "grade": 2},
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Verbalize the subdivisions", "grade": 1}
+      ],
+      "notes": "Triplet Counting chunk directly addresses counting triplets; subdivision-verbalizing is a related general technique."
+    },
+    {
+      "id": "q08",
+      "query": "How should I use a metronome when practicing rhythm so it actually helps?",
+      "category": "timing",
+      "skill_area": "timing",
+      "relevant": [
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Use a metronome selectively", "grade": 2},
+        {"doc_id": "reading-rhythms-songtive", "section_title": "Count Aloud and Practice with a Metronome", "grade": 2},
+        {"doc_id": "rhythm-learning-tips-reddit", "section_title": "Tips to master rhythm", "grade": 1}
+      ],
+      "notes": "Two chunks are explicitly about metronome use (anchor vs. crutch, count aloud while playing); Tips covers slow metronome practice."
+    },
+    {
+      "id": "q09",
+      "query": "I tend to rush and drag instead of keeping a steady beat. How can I fix my timing?",
+      "category": "timing",
+      "skill_area": "timing",
+      "relevant": [
+        {"doc_id": "reading-rhythms-songtive", "section_title": "Practice with Other Musicians or Record Yourself", "grade": 2},
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Use a metronome selectively", "grade": 1},
+        {"doc_id": "rhythm-learning-tips-reddit", "section_title": "Do not play wrong rhythm", "grade": 1}
+      ],
+      "notes": "Recording-yourself chunk names rushing/dragging explicitly; metronome and 'feel the beat' chunks are supporting fixes."
+    },
+    {
+      "id": "q10",
+      "query": "What's a systematic way to teach rhythm and note values to a young beginner?",
+      "category": "timing",
+      "skill_area": "timing",
+      "relevant": [
+        {"doc_id": "systemic-approach-learning-rhythms", "section_title": "Note Values", "grade": 2},
+        {"doc_id": "systemic-approach-learning-rhythms", "section_title": "Book: I Can Read Music by Joanne Martin", "grade": 1},
+        {"doc_id": "systemic-approach-learning-rhythms", "section_title": "Book: Rhythmic Training by Robert Starer", "grade": 1},
+        {"doc_id": "reading-rhythms-songtive", "section_title": "Start with a Simple Counting System", "grade": 1}
+      ],
+      "notes": "Note Values lays out the beginner progression; the two book chunks and the simple counting system support a structured teaching sequence."
+    },
+    {
+      "id": "q11",
+      "query": "I'm making both wrong-note and timing mistakes in one hard passage. How do I practice it accurately?",
+      "category": "both",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Practice slowly but correctly", "grade": 2},
+        {"doc_id": "rhythm-learning-tips-reddit", "section_title": "Do not play wrong rhythm", "grade": 2},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "We ARE what we PRACTICE", "grade": 1},
+        {"doc_id": "rhythm-learning-tips-reddit", "section_title": "Tips to master rhythm", "grade": 1}
+      ],
+      "notes": "Spans both skills: don't ingrain wrong notes (pitch) and don't ingrain sloppy rhythm (timing), both via slow accurate practice."
+    },
+    {
+      "id": "q12",
+      "query": "What ear-training exercises help with both pitch recognition and rhythm at the same time?",
+      "category": "both",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "ear-training-teaching-auralskills", "section_title": "Ear Training", "grade": 2},
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Verbalize the subdivisions", "grade": 1}
+      ],
+      "notes": "The Ear Training chunk covers framework-based listening for pitch AND meter/beat-division (rhythm); subdivision aural work is a related rhythm-ear skill."
+    },
+    {
+      "id": "q13",
+      "query": "How does practicing slowly with a metronome improve both my note accuracy and my timing?",
+      "category": "both",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Practice slowly but correctly", "grade": 2},
+        {"doc_id": "rhythm-learning-tips-reddit", "section_title": "Tips to master rhythm", "grade": 2},
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "The Power of Repetition", "grade": 1},
+        {"doc_id": "counting-rhythm-keynotes", "section_title": "Use a metronome selectively", "grade": 1}
+      ],
+      "notes": "Slow-correct practice serves pitch accuracy; slow metronome practice serves timing; both perspectives are needed to answer."
+    },
+    {
+      "id": "q14",
+      "query": "How should I use the sustain pedal to connect notes in a legato passage?",
+      "category": "not_relevant",
+      "skill_area": null,
+      "relevant": [],
+      "notes": "Pedaling technique is not covered anywhere in this pitch/timing corpus; correct retrieval is nothing relevant."
+    },
+    {
+      "id": "q15",
+      "query": "How do I memorize a long piece so I can perform it from memory?",
+      "category": "not_relevant",
+      "skill_area": null,
+      "relevant": [],
+      "notes": "Memorization is not addressed; the performance-psychology chunk is about wrong notes, not memory work, so nothing truly answers this."
+    },
+    {
+      "id": "q16",
+      "query": "How can I shape dynamics and play a piece more expressively?",
+      "category": "not_relevant",
+      "skill_area": null,
+      "relevant": [],
+      "notes": "Dynamics and musical expression are out of scope for this pitch/timing corpus."
+    },
+    {
+      "id": "q17",
+      "query": "What hand-stretching warm-ups prevent injury when playing fast passages?",
+      "category": "distant",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "rhythm-practice-practisingthepiano", "section_title": "Effective Approaches to Rhythm Practice", "grade": 1}
+      ],
+      "notes": "Touches physical tension/release during fast passages but is about rhythm practice, not warm-ups or injury prevention; no chunk truly answers."
+    },
+    {
+      "id": "q18",
+      "query": "How do I choose the best fingering for a difficult run?",
+      "category": "distant",
+      "skill_area": "pitch",
+      "relevant": [
+        {"doc_id": "rectifying-hitting-wrong-notes-quora", "section_title": "Mechanical Approach", "grade": 1}
+      ],
+      "notes": "Mechanical Approach mentions observing/working out fingerings in service of accuracy, but the corpus has no real fingering-selection guidance."
+    },
+    {
+      "id": "q19",
+      "query": "How can I sight-read a brand-new piece fluently on the first read-through?",
+      "category": "distant",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "reading-rhythms-songtive", "section_title": "Start with a Simple Counting System", "grade": 1},
+        {"doc_id": "wrong-notes-elimination-pianostreet", "section_title": "Concentration is key", "grade": 1}
+      ],
+      "notes": "Corpus covers reading rhythm and reading-ahead focus, which touch sight-reading, but none directly teach first-pass sight-reading fluency."
+    },
+    {
+      "id": "q20",
+      "query": "What is a key signature and how does it work?",
+      "category": "theory",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "Discover the “Why” With a Circle of 5ths Chart", "grade": 1}
+      ],
+      "notes": "Corpus is prescriptive practice advice, not theory; this chunk explains the 'why' of key signatures but does not define the concept."
+    },
+    {
+      "id": "q21",
+      "query": "What is the circle of fifths in music theory?",
+      "category": "theory",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "key-signatures-accidentals-teachpianotoday", "section_title": "Discover the “Why” With a Circle of 5ths Chart", "grade": 1}
+      ],
+      "notes": "Mentions using a Circle of 5ths chart as a teaching aid but never defines what the circle of fifths is; theory query expected to pull only weak noise."
+    },
+    {
+      "id": "q22",
+      "query": "What are the names of the musical intervals, like a third or a fifth?",
+      "category": "theory",
+      "skill_area": null,
+      "relevant": [
+        {"doc_id": "ear-training-teaching-auralskills", "section_title": "Ear Training", "grade": 1}
+      ],
+      "notes": "Ear Training references intervals (e.g., a fourth) only to argue against interval-by-interval thinking; it does not define interval names."
+    }
+  ]
+}
