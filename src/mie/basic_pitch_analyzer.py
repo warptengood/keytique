@@ -12,7 +12,6 @@ from .schemas import AnalysisResult, NoteAccuracy, Note, TimingAccuracy, TimingD
 
 
 TIME_ACCURACY_ONSET_TOLERANCE = 0.15
-TOP_WORST_DEVIATIONS = 5
 
 
 class BasicPitchAnalyzer(Analyzer):
@@ -118,22 +117,23 @@ class BasicPitchAnalyzer(Analyzer):
         onset_error_sec = est_intervals[pairs[:, 1], 0] - ref_intervals[pairs[:, 0], 0]
         abs_error = np.abs(onset_error_sec)
 
-        worst = np.argsort(-abs_error, kind="stable")[:TOP_WORST_DEVIATIONS]
+        deviations = [
+            TimingDeviation(
+                reference_note=Note(
+                    pitch=pretty_midi.note_number_to_name(ref_pitches[pairs[k, 0]]),
+                    onset_sec=float(ref_intervals[pairs[k, 0]][0]),
+                ),
+                onset_error_sec=float(onset_error_sec[k]),
+            )
+            for k in range(len(pairs))
+        ]
+        deviations.sort(key=lambda d: d.reference_note.onset_sec)
 
         return TimingAccuracy(
             mean_onset_error_sec=float(onset_error_sec.mean()),
             mean_abs_onset_error_sec=float(abs_error.mean()),
             matched_note_count=len(matching),
-            worst_deviations=[
-                TimingDeviation(
-                    reference_note=Note(
-                        pitch=pretty_midi.note_number_to_name(ref_pitches[pairs[k, 0]]),
-                        onset_sec=float(ref_intervals[pairs[k, 0]][0]),
-                    ),
-                    onset_error_sec=float(onset_error_sec[k]),
-                )
-                for k in worst
-            ],
+            deviations=deviations,
         )
 
     def _extract_notes_from_midi(self, midi_data: pretty_midi.PrettyMIDI) -> tuple[np.ndarray, np.ndarray]:

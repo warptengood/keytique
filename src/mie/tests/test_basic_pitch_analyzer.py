@@ -35,7 +35,7 @@ def test_perfect_match_scores_one(analyzer: BasicPitchAnalyzer):
     assert time_acc.mean_abs_onset_error_sec == 0.0
     assert time_acc.matched_note_count == len(MELODY)
 
-    for time_deviation in time_acc.worst_deviations:
+    for time_deviation in time_acc.deviations:
         assert time_deviation.onset_error_sec == 0.0
 
 
@@ -55,7 +55,7 @@ def test_dropped_note_is_missed(analyzer: BasicPitchAnalyzer):
     assert time_acc.mean_abs_onset_error_sec == 0.0
     assert time_acc.matched_note_count == len(MELODY) - 1
 
-    for time_deviation in time_acc.worst_deviations:
+    for time_deviation in time_acc.deviations:
         assert time_deviation.onset_error_sec == 0.0
 
 
@@ -75,7 +75,7 @@ def test_added_note_is_extra(analyzer: BasicPitchAnalyzer):
     assert time_acc.mean_abs_onset_error_sec == 0.0
     assert time_acc.matched_note_count == len(MELODY)
 
-    for time_deviation in time_acc.worst_deviations:
+    for time_deviation in time_acc.deviations:
         assert time_deviation.onset_error_sec == 0.0
 
 
@@ -127,14 +127,14 @@ def test_timing_rushing(analyzer: BasicPitchAnalyzer):
 
     _, time_acc = score(analyzer, est, ref)
 
-    deviations = [shift * (i + 1) for i in range(len(MELODY))]
-    deviations.sort(key=lambda d: abs(d), reverse=True)
+    expected = [shift * (i + 1) for i in range(len(MELODY))]  # in reference-onset order
 
-    assert math.isclose(time_acc.mean_onset_error_sec, sum(deviations) / len(deviations), rel_tol=1e-4)
+    assert math.isclose(time_acc.mean_onset_error_sec, sum(expected) / len(expected), rel_tol=1e-4)
     assert time_acc.matched_note_count == len(MELODY)
+    assert len(time_acc.deviations) == len(MELODY)  # all deviations kept, not just the worst
 
-    for i, dev in enumerate(time_acc.worst_deviations):
-        assert math.isclose(dev.onset_error_sec, deviations[i], rel_tol=1e-4)
+    for dev, exp in zip(time_acc.deviations, expected):
+        assert math.isclose(dev.onset_error_sec, exp, rel_tol=1e-4)
 
 
 def test_timing_chaos(analyzer: BasicPitchAnalyzer):
@@ -145,14 +145,14 @@ def test_timing_chaos(analyzer: BasicPitchAnalyzer):
 
     _, time_acc = score(analyzer, est, ref)
 
-    deviations = [shift * (i + 1) * ((-1) ** i) for i in range(len(MELODY))]
-    deviations.sort(key=lambda d: abs(d), reverse=True)
+    expected = [shift * (i + 1) * ((-1) ** i) for i in range(len(MELODY))]  # in reference-onset order
 
-    assert math.isclose(time_acc.mean_abs_onset_error_sec, sum([abs(d) for d in deviations]) / len(deviations), rel_tol=1e-4)
+    assert math.isclose(time_acc.mean_abs_onset_error_sec, sum(abs(d) for d in expected) / len(expected), rel_tol=1e-4)
     assert time_acc.matched_note_count == len(MELODY)
+    assert len(time_acc.deviations) == len(MELODY)
 
-    for i, dev in enumerate(time_acc.worst_deviations):
-        assert math.isclose(dev.onset_error_sec, deviations[i], rel_tol=1e-4)
+    for dev, exp in zip(time_acc.deviations, expected):
+        assert math.isclose(dev.onset_error_sec, exp, rel_tol=1e-4)
 
 
 # --- Helper methods ------------------------------------------------------------

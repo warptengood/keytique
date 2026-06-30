@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -23,7 +25,7 @@ class TimingAccuracy(BaseModel):
     mean_onset_error_sec: float
     mean_abs_onset_error_sec: float
     matched_note_count: int
-    worst_deviations: list[TimingDeviation]
+    deviations: list[TimingDeviation]
 
 
 class AnalysisResult(BaseModel):
@@ -32,3 +34,32 @@ class AnalysisResult(BaseModel):
     duration_sec: float
     note_accuracy: NoteAccuracy
     timing_accuracy: TimingAccuracy | None = None
+
+
+class TimeCluster(BaseModel):
+    start_sec: float
+    end_sec: float
+    error_count: int
+
+
+class ProcessedTiming(BaseModel):
+    mean_onset_error_sec: float
+    mean_abs_onset_error_sec: float
+    matched_note_count: int
+    tendency: Literal["rushing", "dragging", "steady"]
+    worst_deviations: list[TimingDeviation]
+
+
+class ProcessedAnalysisResult(BaseModel):
+    piece: str
+    instruments: list[str]
+    duration_sec: float
+    f1: float
+    precision: float
+    recall: float
+    missed_count: int
+    extra_count: int
+    most_missed_pitches: list[tuple[str, int]]
+    most_missed_pitch_classes: list[tuple[str, int]]
+    error_time_clusters: list[TimeCluster]
+    timing: ProcessedTiming | None = None
