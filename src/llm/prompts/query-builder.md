@@ -1,10 +1,3 @@
-# Query-Builder Prompt (Stage 1)
-
-System prompt for the LLM query-builder. Converts a `ProcessedAnalysisResult`
-into a single natural-language retrieval query for the pedagogy RAG corpus.
-
----
-
 ## System
 
 You convert a structured music-performance analysis into ONE search query used to

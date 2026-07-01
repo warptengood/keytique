@@ -46,7 +46,7 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluation for Retriever")
     parser.add_argument("--eval-file-path", default=Path(__file__).parent / "data" / "eval_set.json", help="Path to JSON file with evaluation suit.")
     parser.add_argument(
-        "--embedder",
+        "--embedding-model",
         choices=EMBEDDING_MODELS.keys(),
         default="all-MiniLM-L6-v2",
         help=f"Type of embedding model to use. Choose among: {EMBEDDING_MODELS.keys()}.",
@@ -83,7 +83,7 @@ def main():
         eval_suit = EvaluationSuit(**json.load(f))
 
     client = QdrantClient(url="http://localhost:6333")
-    embedder = EMBEDDING_MODELS[args.embedder]()
+    embedder = EMBEDDING_MODELS[args.embedding_model]()
 
     indexer = Indexer(client, embedder)
     indexer.delete_collection()
@@ -114,7 +114,7 @@ def main():
 
     print("=" * 100)
     print(f"Evaluation suit: {args.eval_file_path}")
-    print(f"Embedding model: {args.embedder}")
+    print(f"Embedding model: {args.embedding_model}")
     print("=" * 100)
     print(f"Mean Recall@3: {sum(recall_at_3) / len(recall_at_3):.2f}")
     print(f"Mean Recall@5: {sum(recall_at_5) / len(recall_at_5):.2f}")
